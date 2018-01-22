@@ -1,7 +1,6 @@
 import asyncio
-from sanic import Sanic
+import websockets
 from wsrpc import WebsocketRPC
-app = Sanic(__name__)
 
 
 class SampleHandler:
@@ -16,7 +15,12 @@ class SampleHandler:
         return 23
 
 
-@app.websocket('/')
-async def home(request, ws):
+async def go(ws, path):
     await WebsocketRPC(ws, SampleHandler).run()
-app.run(host="0.0.0.0", port=5555, debug=False)
+
+start_server = websockets.serve(go, '127.0.0.1', 5555)
+asyncio.get_event_loop().run_until_complete(start_server)
+try:
+    asyncio.get_event_loop().run_forever()
+except KeyboardInterrupt:
+    pass

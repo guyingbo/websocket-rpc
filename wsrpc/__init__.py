@@ -62,15 +62,13 @@ class WebsocketRPC:
         return self.next_msgid()
 
     async def run(self):
-        try:
-            async for data in self.ws:
-                try:
-                    await self.on_data(data)
-                except Exception as e:
-                    logger.exception(e)
-        finally:
-            if self.tasks:
-                await asyncio.wait(self.tasks, timeout=self.timeout)
+        async for data in self.ws:
+            try:
+                await self.on_data(data)
+            except Exception as e:
+                logger.exception(e)
+        if self.tasks:
+            await asyncio.wait(self.tasks, timeout=self.timeout)
 
     async def on_data(self, data):
         msg = msgpack.unpackb(data, encoding='utf-8')
