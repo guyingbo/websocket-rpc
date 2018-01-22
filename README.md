@@ -1,2 +1,2 @@
 # websocket-rpc
-rpc client and server over websocket
+msgpack rpc over websocket
