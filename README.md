@@ -30,7 +30,7 @@ app.run(host="0.0.0.0", port=5555, debug=False)
 ```
 
 client:
-```
+```python
 import asyncio
 import websockets
 from wsrpc import WebsocketRPC
