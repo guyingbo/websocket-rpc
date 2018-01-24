@@ -29,7 +29,7 @@ setup(
     python_requires='>=3.5',
     install_requires=[
         'websockets>=4.0.1',
-        'msgpack-python>=0.4.8',
+        'msgpack>=0.5.1',
     ],
     classifiers=[
         'Programming Language :: Python :: 3.5',
