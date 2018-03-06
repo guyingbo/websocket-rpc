@@ -41,7 +41,6 @@ class WebsocketRPC:
 
     def __init__(self, ws, handler_cls=None, *, client_mode=False, timeout=10):
         self.ws = ws
-        self.handler = handler_cls(self) if handler_cls else None
         self.timeout = timeout
         self.packer = msgpack.Packer(use_bin_type=1)
         self._request_table = {}
@@ -51,6 +50,7 @@ class WebsocketRPC:
         self.iter = itertools.count()
         self.client_mode = client_mode
         self.max_id = 2 ** 32
+        self.handler = handler_cls(self) if handler_cls else None
         if self.client_mode:
             asyncio.ensure_future(self.run())
 
