@@ -26,13 +26,12 @@ setup(
     maintainer_email='tensiongyb@gmail.com',
     url='https://github.com/guyingbo/websocket-rpc',
     packages=['wsrpc'],
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     install_requires=[
         'websockets>=4.0.1',
         'msgpack>=0.5.1',
     ],
     classifiers=[
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
     setup_requires=['pytest-runner'],
