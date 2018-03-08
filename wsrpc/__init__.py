@@ -3,7 +3,7 @@ import msgpack
 import logging
 import itertools
 logger = logging.getLogger(__name__)
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 class RPCError(Exception):
@@ -39,7 +39,8 @@ class WebsocketRPC:
     RESPONSE = 1
     NOTIFY = 2
 
-    def __init__(self, ws, handler_cls=None, *, client_mode=False, timeout=10):
+    def __init__(self, ws, handler_cls=None, *, client_mode=False, timeout=10,
+                 http_request=None):
         self.ws = ws
         self.timeout = timeout
         self.packer = msgpack.Packer(use_bin_type=1)
@@ -50,6 +51,7 @@ class WebsocketRPC:
         self.iter = itertools.count()
         self.client_mode = client_mode
         self.max_id = 2 ** 32
+        self.http_request = http_request
         self.handler = handler_cls(self) if handler_cls else None
         if self.client_mode:
             asyncio.ensure_future(self.run())

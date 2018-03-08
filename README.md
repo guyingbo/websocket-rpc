@@ -1,4 +1,11 @@
 # websocket-rpc
+
+[![Build Status](https://travis-ci.org/guyingbo/websocket-rpc.svg?branch=master)](https://travis-ci.org/guyingbo/websocket-rpc)
+[![Python Version](https://img.shields.io/pypi/pyversions/websocket-rpc.svg)](https://pypi.python.org/pypi/websocket-rpc)
+[![Version](https://img.shields.io/pypi/v/websocket-rpc.svg)](https://pypi.python.org/pypi/websocket-rpc)
+[![Format](https://img.shields.io/pypi/format/websocket-rpc.svg)](https://pypi.python.org/pypi/websocket-rpc)
+[![License](https://img.shields.io/pypi/l/websocket-rpc.svg)](https://pypi.python.org/pypi/websocket-rpc)
+
 msgpack rpc over websocket
 
 ## Examples
