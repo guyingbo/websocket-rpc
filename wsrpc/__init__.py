@@ -3,7 +3,7 @@ import msgpack
 import logging
 import itertools
 logger = logging.getLogger(__name__)
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 class RPCError(Exception):
@@ -53,6 +53,7 @@ class WebsocketRPC:
         self.max_id = 2 ** 32
         self.http_request = http_request
         self.handler = handler_cls(self) if handler_cls else None
+        self.exc_handlers = []
         if self.client_mode:
             asyncio.ensure_future(self.run())
 
@@ -69,8 +70,16 @@ class WebsocketRPC:
                 await self.on_data(data)
             except Exception as e:
                 logger.exception(e)
+                for handler in self.exc_handlers:
+                    if asyncio.iscoroutinefunction(handler):
+                        await handler(e)
+                    else:
+                        handler(e)
         if self.tasks:
             await asyncio.wait(self.tasks, timeout=self.timeout)
+
+    def exception(self, func):
+        self.exc_handlers.append(func)
 
     async def on_data(self, data):
         msg = msgpack.unpackb(data, encoding='utf-8')
@@ -129,9 +138,9 @@ class WebsocketRPC:
         msgid = self.next_msgid()
         message = [self.REQUEST, msgid, method, params]
         data = self.packer.pack(message)
-        await self.ws.send(data)
         fut = asyncio.Future()
         self._request_table[msgid] = fut
+        await self.ws.send(data)
         return await fut
 
     async def send_notify(self, method, params):
