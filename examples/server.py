@@ -1,6 +1,7 @@
 import asyncio
 from sanic import Sanic
 from wsrpc import WebsocketRPC
+
 app = Sanic(__name__)
 
 
@@ -16,7 +17,9 @@ class SampleHandler:
         return 23
 
 
-@app.websocket('/')
+@app.websocket("/")
 async def home(request, ws):
     await WebsocketRPC(ws, SampleHandler).run()
+
+
 app.run(host="0.0.0.0", port=5555, debug=False)

@@ -18,7 +18,8 @@ class SampleHandler:
 async def go(ws, path):
     await WebsocketRPC(ws, SampleHandler).run()
 
-start_server = websockets.serve(go, '127.0.0.1', 5555)
+
+start_server = websockets.serve(go, "127.0.0.1", 5555)
 asyncio.get_event_loop().run_until_complete(start_server)
 try:
     asyncio.get_event_loop().run_forever()

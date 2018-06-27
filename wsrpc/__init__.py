@@ -2,8 +2,9 @@ import asyncio
 import msgpack
 import logging
 import itertools
+
 logger = logging.getLogger(__name__)
-__version__ = '0.0.3'
+__version__ = "0.0.3"
 
 
 class RPCError(Exception):
@@ -15,7 +16,7 @@ class RemoteCallError(Exception):
 
 
 class NotifyProxy:
-    __slots__ = ('rpc',)
+    __slots__ = ("rpc",)
 
     def __init__(self, rpc):
         self.rpc = rpc
@@ -23,11 +24,12 @@ class NotifyProxy:
     def __getattr__(self, name):
         async def func(*args):
             await self.rpc._send_notify(name, args)
+
         return func
 
 
 class RequestProxy:
-    __slots__ = ('rpc',)
+    __slots__ = ("rpc",)
 
     def __init__(self, rpc):
         self.rpc = rpc
@@ -35,6 +37,7 @@ class RequestProxy:
     def __getattr__(self, name):
         async def func(*args):
             return await self.rpc._send_request(name, args)
+
         return func
 
 
@@ -43,8 +46,9 @@ class WebsocketRPC:
     RESPONSE = 1
     NOTIFY = 2
 
-    def __init__(self, ws, handler_cls=None, *, client_mode=False, timeout=10,
-                 http_request=None):
+    def __init__(
+        self, ws, handler_cls=None, *, client_mode=False, timeout=10, http_request=None
+    ):
         self.ws = ws
         self.timeout = timeout
         self._packer = msgpack.Packer(use_bin_type=1)
@@ -86,15 +90,14 @@ class WebsocketRPC:
         self._exc_handlers.append(func)
 
     async def _on_data(self, data):
-        msg = msgpack.unpackb(data, encoding='utf-8')
-        assert type(msg) == list, 'unknown message format'
-        assert len(msg) > 0, 'error message length'
+        msg = msgpack.unpackb(data, encoding="utf-8")
+        assert type(msg) == list, "unknown message format"
+        assert len(msg) > 0, "error message length"
         msgtype = msg[0]
         if msgtype == self.REQUEST:
             msgid, method_name, params = msg[1:]
             method_name = method_name
-            task = asyncio.ensure_future(
-                    self._on_request(msgid, method_name, params))
+            task = asyncio.ensure_future(self._on_request(msgid, method_name, params))
         elif msgtype == self.RESPONSE:
             msgid, error, result = msg[1:]
             self._on_response(msgid, error, result)
@@ -104,7 +107,7 @@ class WebsocketRPC:
             method_name = method_name
             task = asyncio.ensure_future(self._on_notify(method_name, params))
         else:
-            raise RPCError('unknown msgtype')
+            raise RPCError("unknown msgtype")
         if task:
             self._tasks.add(task)
             task.add_done_callback(self._tasks.remove)
