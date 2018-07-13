@@ -1,3 +1,4 @@
+"msgpack rpc over websockets"
 import asyncio
 import msgpack
 import logging
@@ -63,7 +64,9 @@ class WebsocketRPC:
         self.handler = handler_cls(self) if handler_cls else None
         self._exc_handlers = []
         if self.client_mode:
-            asyncio.ensure_future(self.run())
+            self.client_task = asyncio.ensure_future(self.run())
+        else:
+            self.client_task = None
 
     def _next_msgid(self):
         i = next(self._iter)
@@ -83,6 +86,18 @@ class WebsocketRPC:
                         await exc_handler(e)
                     else:
                         exc_handler(e)
+        try:
+            await asyncio.shield(self._join())
+        except asyncio.CancelledError:
+            await self._join()
+
+    async def close(self):
+        if self.client_mode:
+            await self.ws.close()
+        if self.client_task:
+            await self.client_task
+
+    async def _join(self):
         if self._tasks:
             await asyncio.wait(self._tasks, timeout=self.timeout)
 

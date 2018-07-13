@@ -35,7 +35,10 @@ setup(
     packages=["wsrpc"],
     python_requires=">=3.6",
     install_requires=["websockets>=4.0.1", "msgpack>=0.5.1"],
-    classifiers=["Programming Language :: Python :: 3.6"],
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.6",
+    ],
     setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
+    tests_require=["pytest", "coverage", "pytest-cov", "pytest-asyncio"],
 )
