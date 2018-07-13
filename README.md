@@ -5,6 +5,7 @@
 [![Version](https://img.shields.io/pypi/v/websocket-rpc.svg)](https://pypi.python.org/pypi/websocket-rpc)
 [![Format](https://img.shields.io/pypi/format/websocket-rpc.svg)](https://pypi.python.org/pypi/websocket-rpc)
 [![License](https://img.shields.io/pypi/l/websocket-rpc.svg)](https://pypi.python.org/pypi/websocket-rpc)
+[![codecov](https://codecov.io/gh/guyingbo/websocket-rpc/branch/master/graph/badge.svg)](https://codecov.io/gh/guyingbo/websocket-rpc)
 
 msgpack rpc over websocket
 
@@ -52,6 +53,7 @@ async def go():
         print(r)
         r = await rpc.notify.add(2, 3)
         print(r)
+    await rpc.close()
 
 
 loop.run_until_complete(go())

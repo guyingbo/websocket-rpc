@@ -1,0 +1,7 @@
+[run]
+source = wsrpc
+
+[report]
+include = 
+    wsrpc/*.py
+    tests/*.py

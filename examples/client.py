@@ -13,6 +13,7 @@ async def go():
         print(r)
         r = await rpc.notify.add(2, 3)
         print(r)
+    await rpc.close()
 
 
 loop.run_until_complete(go())
