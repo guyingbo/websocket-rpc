@@ -8,6 +8,7 @@ build-backend = "flit.buildapi"
 
 [tool.flit.metadata]
 module = "wsrpc"
+dist-name = "websocket-rpc"
 author = "Yingbo Gu"
 author-email = "tensiongyb@gmail.com"
 maintainer="Yingbo Gu"
@@ -17,6 +18,8 @@ description-file = "README.md"
 requires-python=">=3.6"
 classifiers = [
     "License :: OSI Approved :: MIT License",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
     "Programming Language :: Python :: 3.6",
 ]
 requires = ["websockets>=4.0.1", "msgpack>=0.5.1"]
