@@ -9,11 +9,11 @@ class SampleHandler:
     def __init__(self, rpc):
         self.remote = rpc
 
-    async def add(self, a, b):
+    async def rpc_add(self, a, b):
         await asyncio.sleep(0.001)
         return a + b
 
-    async def foo(self):
+    async def rpc_foo(self):
         await asyncio.sleep(1)
 
 

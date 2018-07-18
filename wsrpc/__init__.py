@@ -1,4 +1,5 @@
 "msgpack rpc over websockets"
+import inspect
 import asyncio
 import msgpack
 import logging
@@ -48,7 +49,14 @@ class WebsocketRPC:
     NOTIFY = 2
 
     def __init__(
-        self, ws, handler_cls=None, *, client_mode=False, timeout=10, http_request=None
+        self,
+        ws,
+        handler_cls=None,
+        *,
+        client_mode: bool = False,
+        timeout=10,
+        http_request=None,
+        method_prefix: str = "rpc_"
     ):
         self.ws = ws
         self.timeout = timeout
@@ -61,6 +69,7 @@ class WebsocketRPC:
         self.client_mode = client_mode
         self.max_id = 2 ** 32
         self.http_request = http_request
+        self.method_prefix = method_prefix
         self.handler = handler_cls(self) if handler_cls else None
         self._exc_handlers = []
         if self.client_mode:
@@ -129,9 +138,11 @@ class WebsocketRPC:
 
     async def _on_request(self, msgid, method_name, params):
         try:
+            method_name = self.method_prefix + method_name
             method = getattr(self.handler, method_name)
             result = method(*params)
-            if asyncio.iscoroutine(result):
+            # if asyncio.iscoroutine(result):
+            if inspect.isawaitable(result):
                 result = await result
         except Exception as e:
             await self._send_response(msgid, 1, str(e))
@@ -146,9 +157,11 @@ class WebsocketRPC:
             fut.set_exception(RemoteCallError(error, result))
 
     async def _on_notify(self, method_name, params):
+        method_name = self.method_prefix + method_name
         method = getattr(self.handler, method_name)
         result = method(*params)
-        if asyncio.iscoroutine(result):
+        # if asyncio.iscoroutine(result):
+        if inspect.isawaitable(result):
             result = await result
 
     async def _send_response(self, msgid, error, result):
