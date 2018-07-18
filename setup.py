@@ -37,6 +37,8 @@ setup(
     install_requires=["websockets>=4.0.1", "msgpack>=0.5.1"],
     classifiers=[
         "License :: OSI Approved :: MIT License",
+        "Framework :: AsyncIO",
+        "Intended Audience :: Developers",
         "Programming Language :: Python :: 3.6",
     ],
     setup_requires=["pytest-runner"],

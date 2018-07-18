@@ -6,7 +6,7 @@ import logging
 import itertools
 
 logger = logging.getLogger(__name__)
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 
 
 class RPCError(Exception):
