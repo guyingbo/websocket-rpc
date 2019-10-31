@@ -6,8 +6,21 @@ include = '\.pyi?$'
 name = "websocket-rpc"
 version = "0.0.5"
 description = ""
+readme = "README.md"
 authors = ["Gu Yingbo <tensiongyb@gmail.com>"]
 license = "MIT"
+homepage = "https://github.com/guyingbo/websocket-rpc"
+repository = "https://github.com/guyingbo/websocket-rpc"
+packages = [
+    { include = "wsrpc" }
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7"
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
