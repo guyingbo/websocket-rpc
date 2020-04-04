@@ -114,7 +114,7 @@ class WebsocketRPC:
         self._exc_handlers.append(func)
 
     async def _on_data(self, data):
-        msg = msgpack.unpackb(data, encoding="utf-8")
+        msg = msgpack.unpackb(data)
         assert type(msg) == list, "unknown message format"
         assert len(msg) > 0, "error message length"
         msgtype = msg[0]
