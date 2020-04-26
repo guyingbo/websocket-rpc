@@ -142,12 +142,12 @@ class WebsocketRPC:
         if inspect.isawaitable(result):
             result = await result
 
-    async def _send_response(self, msgid: int, error: int, result):
+    async def _send_response(self, msgid: int, error: int, result) -> None:
         message = [self.RESPONSE, msgid, error, result]
         data = self._packer.pack(message)
         await self.ws.send(data)
 
-    async def _send_request(self, method: str, params: tuple):
+    async def _send_request(self, method: str, params: tuple) -> typing.Any:
         msgid = self._next_msgid()
         message = [self.REQUEST, msgid, method, params]
         data = self._packer.pack(message)
@@ -156,7 +156,7 @@ class WebsocketRPC:
         await self.ws.send(data)
         return await fut
 
-    async def _send_notify(self, method: str, params: tuple):
+    async def _send_notify(self, method: str, params: tuple) -> None:
         message = [self.NOTIFY, method, params]
         data = self._packer.pack(message)
         await self.ws.send(data)
