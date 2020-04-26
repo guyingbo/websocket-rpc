@@ -1,9 +1,11 @@
-"msgpack rpc over websockets"
-import inspect
+"""msgpack rpc over websockets"""
 import asyncio
-import msgpack
-import logging
+import inspect
 import itertools
+import logging
+import typing
+
+import msgpack  # type: ignore
 
 logger = logging.getLogger(__name__)
 __version__ = "0.0.6"
@@ -17,52 +19,27 @@ class RemoteCallError(Exception):
     pass
 
 
-class NotifyProxy:
-    __slots__ = ("rpc",)
-
-    def __init__(self, rpc):
-        self.rpc = rpc
-
-    def __getattr__(self, name):
-        async def func(*args):
-            await self.rpc._send_notify(name, args)
-
-        return func
-
-
-class RequestProxy:
-    __slots__ = ("rpc",)
-
-    def __init__(self, rpc):
-        self.rpc = rpc
-
-    def __getattr__(self, name):
-        async def func(*args):
-            return await self.rpc._send_request(name, args)
-
-        return func
-
-
 class WebsocketRPC:
     REQUEST = 0
     RESPONSE = 1
     NOTIFY = 2
+    client_task: typing.Optional[asyncio.Future]
 
     def __init__(
         self,
         ws,
-        handler_cls=None,
+        handler_cls: type = None,
         *,
         client_mode: bool = False,
-        timeout=10,
+        timeout: int = 10,
         http_request=None,
         method_prefix: str = "rpc_"
     ):
         self.ws = ws
         self.timeout = timeout
         self._packer = msgpack.Packer(use_bin_type=1)
-        self._request_table = {}
-        self._tasks = set()
+        self._request_table: typing.Dict[int, asyncio.Future] = {}
+        self._tasks: typing.Set[asyncio.Future] = set()
         self.notify = NotifyProxy(self)
         self.request = RequestProxy(self)
         self._iter = itertools.count()
@@ -71,20 +48,20 @@ class WebsocketRPC:
         self.http_request = http_request
         self.method_prefix = method_prefix
         self.handler = handler_cls(self) if handler_cls else None
-        self._exc_handlers = []
+        self._exc_handlers: typing.List[typing.Callable] = []
         if self.client_mode:
             self.client_task = asyncio.ensure_future(self.run())
         else:
             self.client_task = None
 
-    def _next_msgid(self):
+    def _next_msgid(self) -> int:
         i = next(self._iter)
         if i < self.max_id:
             return i
         self._iter = itertools.count()
         return self._next_msgid()
 
-    async def run(self):
+    async def run(self) -> None:
         async for data in self.ws:
             try:
                 await self._on_data(data)
@@ -100,24 +77,25 @@ class WebsocketRPC:
         except asyncio.CancelledError:
             await self._join()
 
-    async def close(self):
+    async def close(self) -> None:
         if self.client_mode:
             await self.ws.close()
         if self.client_task:
             await self.client_task
 
-    async def _join(self):
+    async def _join(self) -> None:
         if self._tasks:
             await asyncio.wait(self._tasks, timeout=self.timeout)
 
-    def exception(self, func):
+    def exception(self, func: typing.Callable) -> None:
         self._exc_handlers.append(func)
 
-    async def _on_data(self, data):
+    async def _on_data(self, data: bytes) -> None:
         msg = msgpack.unpackb(data)
         assert type(msg) == list, "unknown message format"
         assert len(msg) > 0, "error message length"
         msgtype = msg[0]
+        task: typing.Optional[asyncio.Future]
         if msgtype == self.REQUEST:
             msgid, method_name, params = msg[1:]
             method_name = method_name
@@ -136,7 +114,7 @@ class WebsocketRPC:
             self._tasks.add(task)
             task.add_done_callback(self._tasks.remove)
 
-    async def _on_request(self, msgid, method_name, params):
+    async def _on_request(self, msgid: int, method_name: str, params: tuple) -> None:
         try:
             method_name = self.method_prefix + method_name
             method = getattr(self.handler, method_name)
@@ -149,14 +127,14 @@ class WebsocketRPC:
         else:
             await self._send_response(msgid, 0, result)
 
-    def _on_response(self, msgid, error, result):
+    def _on_response(self, msgid: int, error: int, result) -> None:
         fut = self._request_table.pop(msgid)
         if error == 0:
             fut.set_result(result)
         else:
             fut.set_exception(RemoteCallError(error, result))
 
-    async def _on_notify(self, method_name, params):
+    async def _on_notify(self, method_name: str, params: tuple) -> None:
         method_name = self.method_prefix + method_name
         method = getattr(self.handler, method_name)
         result = method(*params)
@@ -164,21 +142,47 @@ class WebsocketRPC:
         if inspect.isawaitable(result):
             result = await result
 
-    async def _send_response(self, msgid, error, result):
+    async def _send_response(self, msgid: int, error: int, result):
         message = [self.RESPONSE, msgid, error, result]
         data = self._packer.pack(message)
         await self.ws.send(data)
 
-    async def _send_request(self, method, params):
+    async def _send_request(self, method: str, params: tuple):
         msgid = self._next_msgid()
         message = [self.REQUEST, msgid, method, params]
         data = self._packer.pack(message)
-        fut = asyncio.Future()
+        fut: asyncio.Future = asyncio.Future()
         self._request_table[msgid] = fut
         await self.ws.send(data)
         return await fut
 
-    async def _send_notify(self, method, params):
+    async def _send_notify(self, method: str, params: tuple):
         message = [self.NOTIFY, method, params]
         data = self._packer.pack(message)
         await self.ws.send(data)
+
+
+class NotifyProxy:
+    __slots__ = ("rpc",)
+
+    def __init__(self, rpc: WebsocketRPC):
+        self.rpc = rpc
+
+    def __getattr__(self, name: str):
+        async def func(*args):
+            await self.rpc._send_notify(name, args)
+
+        return func
+
+
+class RequestProxy:
+    __slots__ = ("rpc",)
+
+    def __init__(self, rpc: WebsocketRPC):
+        self.rpc = rpc
+
+    def __getattr__(self, name: str):
+        async def func(*args):
+            return await self.rpc._send_request(name, args)
+
+        return func
