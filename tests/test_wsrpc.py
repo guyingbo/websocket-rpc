@@ -1,7 +1,9 @@
-import pytest
-import msgpack
 import asyncio
+
+import msgpack
+import pytest
 import websockets
+
 import wsrpc
 
 

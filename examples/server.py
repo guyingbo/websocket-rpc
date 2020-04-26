@@ -1,5 +1,7 @@
 import asyncio
+
 from sanic import Sanic
+
 from wsrpc import WebsocketRPC
 
 app = Sanic(__name__)
